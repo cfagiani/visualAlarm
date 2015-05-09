@@ -26,24 +26,32 @@ def main(args):
             GPIO.cleanup()
 
 def run_event_loop(events, intervalMin):
+    """starts an infinite loop that, on each iteration will invoke any events with scheduled times that have elapsed. The loop sleeps for intervalMin (set via the resolution command line argument) each iteration.
+    """
     while True:
         time.sleep(intervalMin*60)
         now = datetime.datetime.now()
         for evt in events:
             evt.execute_if_elapsed(now)
 
-def build_schedule(onTime,offTime,toggleTime,light1,light2):
+def build_schedule(onTime,toggleTime,offTime,light1,light2):
+    """Forms the list of events
+    """
     events = []
     events.append(AlarmTask(onTime,lambda: set_pin(light1,True)))
     events.append(AlarmTask(toggleTime,lambda: toggle_pins(light1,light2)))
-    events.append(AlarmTask(toggleTime,lambda: set_pin(light2,False)))
+    events.append(AlarmTask(offTime,lambda: set_pin(light2,False)))
     return events
     
 def toggle_pins(pinToCancel,pinToActivate):
+    """turns pinToCancel off and pinToActivate on
+    """
     set_pin(pinToCancel,False)
     set_pin(pinToActivate,True)
 
 def deactivate_pins(pin1,pin2):
+    """turns both pins off
+    """
     set_pin(pin1,False)
     set_pin(pin2,False)
    
