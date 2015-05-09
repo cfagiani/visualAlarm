@@ -7,12 +7,13 @@ class AlarmTask:
     """Encapsulates a task that will be executed by the alarm engine
     """
     
-    def __init__(self, name,time_string,action):
+    def __init__(self, name,time_string,action, one_time=False):
         """constructor. Sets the target even titme to the value represented by time_string (format should be HH:MM). 
         """
         self.name = name
         self.action = action
         h,m = time_string.split(":")
+        self.one_time= one_time
         self.time = datetime.time(int(h),int(m))
         self.last_run = None
 
@@ -29,5 +30,16 @@ class AlarmTask:
         d['name']=self.name
         d['time']=str(self.time)
         d['last']=str(self.last_run)
+        d['onetime']=self.one_time
         return d
-        
+
+    def get_name(self):
+        return self.name
+
+    def update_time(self,time_string):
+        try:
+            h,m = time_string.split(":")
+            self.time = datetime.time(int(h),int(m))
+            return True
+        except:
+            return False
