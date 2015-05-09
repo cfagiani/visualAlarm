@@ -1,8 +1,13 @@
 """
 __author__ = 'Christopher Fagiani'
 """
+hasGPIO = False
+try:
+    import RPi.GPIO as GPIO
+    hasGPIO = True
+except ImportError:
+    print "GPIO is not installed. All GPIO operations will be simulated. Please install the module to actually use this utility."
 
-import RPi.GPIO as GPIO
 import time, argparse,datetime
 from alarmtask import AlarmTask
 from threading import Timer
@@ -14,19 +19,20 @@ def main(args):
         light1 = int(args.light1)
         light2 = int(args.light2)
         initialize(light1,light2)
-        eventList = buildSchedule(args.onTime,args.toggleTime,args.offTime,light1,light2)
+        eventList = build_schedule(args.onTime,args.toggleTime,args.offTime,light1,light2)
         run_event_loop(eventList, int(args.resolution))
     finally:
-        GPIO.cleanup()
+        if hasGPIO:
+            GPIO.cleanup()
 
 def run_event_loop(events, intervalMin):
     while True:
         time.sleep(intervalMin*60)
         now = datetime.datetime.now()
         for evt in events:
-            evt.execute_if_elapsed(datetime.time(now.hour,now.minute))
+            evt.execute_if_elapsed(now)
 
-def buildSchedule(onTime,offTime,toggleTime,light1,light2):
+def build_schedule(onTime,offTime,toggleTime,light1,light2):
     events = []
     events.append(AlarmTask(onTime,lambda: set_pin(light1,True)))
     events.append(AlarmTask(toggleTime,lambda: toggle_pins(light1,light2)))
@@ -44,17 +50,23 @@ def deactivate_pins(pin1,pin2):
 def set_pin(pin,val):
     """Changes the value on the pin passed in
     """
-    GPIO.output(pin,val)
-
+    if hasGPIO:
+        GPIO.output(pin,val)
+    else:
+        print "Set pin %d to %s" % (pin,val)
+        
 def initialize(light1,light2):
     """Sets upt the GPIO channels and resets them both to OFF
     """
-    GPIO.setmode(GPIO.BCM)
+    if hasGPIO:
+        GPIO.setmode(GPIO.BCM)
  
-    GPIO.setup(light1, GPIO.OUT)
-    GPIO.setup(light2,GPIO.OUT)
-    deactivate_pins(light1,light2)
-    
+        GPIO.setup(light1, GPIO.OUT)
+        GPIO.setup(light2,GPIO.OUT)
+        deactivate_pins(light1,light2)
+    else:
+        print("initialized GPIO")
+        
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser(description="Toggles LED lights based on a schedule")
     #argparser.add_argument("-p","--port", metavar='port',default="8080",help='port for rest api',dest='port')
