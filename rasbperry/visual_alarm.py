@@ -20,15 +20,11 @@ def main(args):
         GPIO.cleanup()
 
 def run_event_loop(events, intervalMin):
-    lastHr = -1
-    lastMin = -1
     while True:
         time.sleep(intervalMin*60)
         now = datetime.datetime.now()
         for evt in events:
-            evt.execute_if_elapsed(datetime.time(now.hour,now.minute),intervalMin)
-        lastHr = now.hour
-        lastMin = now.minute
+            evt.execute_if_elapsed(datetime.time(now.hour,now.minute))
 
 def buildSchedule(onTime,offTime,toggleTime,light1,light2):
     events = []

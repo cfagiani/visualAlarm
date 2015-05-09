@@ -11,12 +11,13 @@ class AlarmTask:
         self.action = action
         h,m = time_string.split(":")
         self.time = datetime.time(int(h),int(m))
+        self.last_run = None
 
-    def execute_if_elapsed(self,curTime,resolutionTime):
+    def execute_if_elapsed(self,now):
         """If the time on this task is at or after the current time AND it's less than curTime+resolution
             TODO: this doesn't handle the midnight wrap-around
         """
-        if self.time >= curTime and self.time< self.addMinutes(curTime,resolutionTime):
+        if self.time >= datetime.time(now.hour,now.minute) and (self.last_run is None or (now - self.last_run).seconds > ((24*60*60)-1)):
             self.action()
         
     def addMinutes(self,tm, mins):
