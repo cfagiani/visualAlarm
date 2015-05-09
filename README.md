@@ -26,5 +26,4 @@ This will turn the LED wired to pin 18 on at 19:00. At 21:00, it will turn off p
 
 
 TODO:
-* restful interface for toggling lights
 * Android app to call rest API
