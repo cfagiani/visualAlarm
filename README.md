@@ -9,7 +9,13 @@ $ tar zxf RPi.GPIO-0.1.0.tar.gz
 $ cd RPi.GPIO-0.1.0
 $ sudo python setup.py install
 ```
-This also assumes you have wired up two LEDs.
+
+The Flask module is also used for the RESTful interface. This can be installed via:
+```
+sudo pip install flask
+```
+
+The utility also assumes you have wired up two LEDs.
 
 
 An example command to run the tool is:

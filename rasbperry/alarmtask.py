@@ -7,9 +7,10 @@ class AlarmTask:
     """Encapsulates a task that will be executed by the alarm engine
     """
     
-    def __init__(self, time_string,action):
+    def __init__(self, name,time_string,action):
         """constructor. Sets the target even titme to the value represented by time_string (format should be HH:MM). 
         """
+        self.name = name
         self.action = action
         h,m = time_string.split(":")
         self.time = datetime.time(int(h),int(m))
@@ -19,7 +20,14 @@ class AlarmTask:
         """If the time on this task is at or after the current time AND it's been more than 24 hours since last run
         """
         if self.time <= datetime.time(now.hour,now.minute) and (self.last_run is None or (now - self.last_run).seconds > (24*60*60)):
-            #print "Action triggered at %02d:%02d. Scheduled for %02d:%02d" % (now.hour,now.minute, self.time.hour,self.time.minute)
+            print "Action %s triggered at %02d:%02d. Scheduled for %02d:%02d" % (self.name,now.hour,now.minute, self.time.hour,self.time.minute)
             self.last_run = now
             self.action()
+
+    def to_dict(self):
+        d = {}
+        d['name']=self.name
+        d['time']=str(self.time)
+        d['last']=str(self.last_run)
+        return d
         
