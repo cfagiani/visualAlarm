@@ -40,6 +40,7 @@ class AlarmTask:
         try:
             h,m = time_string.split(":")
             self.time = datetime.time(int(h),int(m))
+            self.last_run = None
             return True
         except:
             return False
