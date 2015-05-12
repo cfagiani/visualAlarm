@@ -8,6 +8,7 @@ from threading import Timer
 
 hasGPIO = False
 hasWeb = False
+#do conditional imports (for easiser testing)
 try:
     import RPi.GPIO as GPIO
     hasGPIO = True

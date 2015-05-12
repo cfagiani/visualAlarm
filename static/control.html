@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>VisualAlarm</title>
+
+
+<link rel="stylesheet"
+	href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+<link rel="stylesheet"
+	href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+
+<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+<!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+	<div class="container-fluid">
+		<div class="content">
+			<div class="page-header">
+				<h2>Visual Alarm Control Panel</h2>
+			</div>
+			<div id="timeDiv"></div>
+			<div id="eventsDiv"></div>
+		</div>
+	</div>
+	<script
+		src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+	<script
+		src="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+	<script type="text/javascript">
+		$(document).ready(
+				function() {
+					$.ajax({
+						url : "/events"
+					}).then(function(data) {
+						arr = $.parseJSON(data);
+						$.each(arr, function(i, item) {
+							$('#eventsDiv').append(buildEventDiv(item));
+						});
+					});
+
+					$.ajax({
+						url : "/curtime"
+					}).then(
+							function(data) {
+								dataObj = $.parseJSON(data);
+								$('#timeDiv').html(
+										"Current time on device: "
+												+ dataObj.curtime);
+							});
+
+				});
+
+		function buildEventDiv(evt) {
+			var rowDiv = $("<div class='row'>");
+			var eventDiv = $("<div class='panel panel-default'>");
+			eventDiv.append($("<div class='panel-heading'>").html(
+					evt.name.toUpperCase() + " Event"));
+			var formObj = $("<form role='form'>");
+			eventDiv.append(formObj);
+			var formGroupDiv = $("<div class='form-group'>");
+
+			var label = $("<label class='form-label' for='time' >");
+			label.html("Time");
+			formGroupDiv.append(label);
+			var timebox = $('<input type="text" class="form-control" name="time" placeholder="hh24:mm" value="'+evt.time+'"">');
+			formGroupDiv.append(timebox);
+			formObj.append(formGroupDiv);
+			var btn = $('<button type="submit" class="btn btn-default">');
+			btn.html("Update");
+			formObj.append(btn);
+			rowDiv.append(eventDiv);
+
+			formObj.submit(function(event) {
+				event.preventDefault();
+				var time = timebox.val();
+				if (time.match(/^([01]\d|2[0-3]):([0-5]\d)$/) == null) {
+					setSuccess(formGroupDiv, false);
+				} else {
+					//update and set to green
+					$.ajax({
+						type : "PUT",
+						dataType : "json",
+						url : "/events/" + evt.name + "?time=" + time,
+						success : function(data) {
+							setSuccess(formGroupDiv, true);
+						}
+					});
+				}
+
+			});
+			return rowDiv;
+		}
+
+		function setSuccess(element, isSuccess) {
+			if (isSuccess) {
+				element.removeClass("has-error");
+				element.addClass("has-success");
+			} else {
+				element.addClass("has-error");
+				element.removeClass("has-success");
+			}
+
+		}
+	</script>
+</body>
+</html>

@@ -26,9 +26,11 @@ class AlarmTask:
             self.action()
 
     def to_dict(self):
+        """returns a dictionary representation of the fields of this object
+        """
         d = {}
         d['name']=self.name
-        d['time']=str(self.time)
+        d['time']=self.time.strftime('%H:%M')
         d['last']=str(self.last_run)
         d['onetime']=self.one_time
         return d
@@ -37,6 +39,8 @@ class AlarmTask:
         return self.name
 
     def update_time(self,time_string):
+        """updates the time property to the value passed in AND resets the last_run property to None
+        """
         try:
             h,m = time_string.split(":")
             self.time = datetime.time(int(h),int(m))
