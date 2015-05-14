@@ -20,7 +20,7 @@ class AlarmTask:
     def execute_if_elapsed(self,now):
         """If the time on this task is at or after the current time AND it's been more than 24 hours since last run
         """
-        if self.time <= datetime.time(now.hour,now.minute) and (self.last_run is None or (now - self.last_run).seconds > (24*60*60)):
+        if self.time <= datetime.time(now.hour,now.minute) and (self.last_run is None or (now - self.last_run).seconds >= (24*60*59)):
             print "Action %s triggered at %02d:%02d. Scheduled for %02d:%02d" % (self.name,now.hour,now.minute, self.time.hour,self.time.minute)
             self.last_run = now
             self.action()
