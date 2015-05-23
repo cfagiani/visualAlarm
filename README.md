@@ -34,5 +34,4 @@ The time values are all assumed to be the default timezone as configured on the 
 * API to add additional events
 * Return timezone in Rest API so UI can render times in local timezone
 * Pin Status API 
-* Refactor code so there is a more logical way to access the 'engine' from the rest interface
 

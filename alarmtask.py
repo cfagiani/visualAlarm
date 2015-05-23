@@ -41,10 +41,6 @@ class AlarmTask:
     def update_time(self,time_string):
         """updates the time property to the value passed in AND resets the last_run property to None
         """
-        try:
-            h,m = time_string.split(":")
-            self.time = datetime.time(int(h),int(m))
-            self.last_run = None
-            return True
-        except:
-            return False
+        h,m = time_string.split(":")
+        self.time = datetime.time(int(h),int(m))
+        self.last_run = None
