@@ -19,6 +19,7 @@ except ImportError:
 def main(args):
     """This program will use the GPIO capabilities of the raspberry pi to toggle LED lights based on a schedule
     """
+    driver = None
     try:
         driver = AlarmDriver(int(args.light1),int(args.light2))
         driver.build_schedule(args.onTime,args.toggleTime,args.offTime)
@@ -29,7 +30,8 @@ def main(args):
         print("Starting event loop")
         driver.run_event_loop(int(args.resolution))
     finally:
-        driver.shutdown()
+        if driver != None:
+            driver.shutdown()
 
 
 if __name__ == "__main__":

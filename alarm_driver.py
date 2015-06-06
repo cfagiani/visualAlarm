@@ -4,6 +4,10 @@ __author__ = 'Christopher Fagiani'
 import time, argparse,datetime, threading
 from alarmtask import AlarmTask
 from threading import Timer
+try:
+    import RPi.GPIO as GPIO
+except:
+    print "GPIO not installed"
 
 class AlarmDriver:
 
@@ -11,6 +15,10 @@ class AlarmDriver:
         """Cleans up the GPIO interface
         """
         if self.hasGPIO:
+            try:
+                self.deactivate_pins()
+            except:
+                print("Could not deactivate pins prior to shutdown")
             GPIO.cleanup()
 
     def get_events(self):
@@ -42,10 +50,16 @@ class AlarmDriver:
         """Forms the list of events
         """
         events = []
-        events.append(AlarmTask("on",onTime,lambda: self.set_pin(self.light1,True)))
-        events.append(AlarmTask("toggle",toggleTime,lambda: self.toggle_pins(self.light1,self.light2)))
-        events.append(AlarmTask("off",offTime,lambda: self.set_pin(self.light2,False)))
+        events.append(AlarmTask("on",onTime,lambda: self.toggle_pins(self.pins[1],self.pins[0])))
+        events.append(AlarmTask("toggle",toggleTime,lambda: self.toggle_pins(self.pins[0],self.pins[1])))
+        events.append(AlarmTask("off",offTime,lambda: self.deactivate_pins()))
         self.events=events
+
+    def get_pin_status(self):
+        for p in self.pins:
+            if self.hasGPIO:
+                p.update_status(GPIO.input(p.get_num()))      
+        return self.pins
         
     def toggle_pins(self,pinToCancel,pinToActivate):
         """turns pinToCancel off and pinToActivate on
@@ -53,19 +67,19 @@ class AlarmDriver:
         self.set_pin(pinToCancel,False)
         self.set_pin(pinToActivate,True)
 
-    def deactivate_pins(self, pin1,pin2):
-        """turns both pins off
+    def deactivate_pins(self):
+        """turns all pins off
         """
-        self.set_pin(pin1,False)
-        self.set_pin(pin2,False)
-       
+        for p in self.pins:
+            self.set_pin(p,False)
+ 
     def set_pin(self,pin,val):
         """Changes the value on the pin passed in
         """
         if self.hasGPIO:
-            GPIO.output(pin,val)
+            GPIO.output(pin.get_num(),val)
         else:
-            print "Set pin %d to %s" % (pin,val)
+            print "Set pin %d to %s" % (pin.get_num(),val)
             
     def __init__(self, light1,light2):
         """Sets upt the GPIO channels and resets them both to OFF
@@ -79,13 +93,43 @@ class AlarmDriver:
         except ImportError:
             print "GPIO is not installed. All GPIO operations will be simulated. Please install the module to actually use this utility."
 
-        self.light1 = light1
-        self.light2 = light2
+        self.pins = []
+        self.pins.append(Pin(light1, "red"))
+        self.pins.append(Pin(light2, "green"))
+ 
         if self.hasGPIO:
             GPIO.setmode(GPIO.BCM)
-            GPIO.setup(light1, GPIO.OUT)
-            GPIO.setup(light2,GPIO.OUT)
-            deactivate_pins(light1,light2)
+            for p in self.pins:
+                GPIO.setup(p.get_num(),GPIO.OUT, initial=False)
+ 
+            self.deactivate_pins()
         else:
             print("initialized GPIO")
             
+class Pin:
+    def __init__(self, num,color):
+        self.num= num
+        self.color=color
+        self.status = False
+
+    def get_num(self):
+        return self.num
+
+    def get_color(self):
+        return self.color
+
+    def get_status(self):
+        return self.status;
+
+    def update_status(self,val):
+        if val == 0:
+            self.status = False
+        else:
+            self.status = True
+
+    def to_dict(self):
+        d = {}
+        d['pin']=self.num
+        d['color']=self.color
+        d['status'] = self.status
+        return d

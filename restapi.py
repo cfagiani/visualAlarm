@@ -16,6 +16,13 @@ def list_events():
     global apiInstance
     return apiInstance.list_events()
 
+@app.route("/status",methods=["GET"])
+def get_status():
+    """returns on/of status of all pins
+    """
+    global apiInstance
+    return apiInstance.get_pin_status()
+
 @app.route("/curtime", methods=["GET"])
 def get_curtime():
     """returns the current time on the system
@@ -47,6 +54,11 @@ class RestApi:
     def run_app(self):
         app.run(host="0.0.0.0",port=self.port)
 
+    def get_pin_status(self):
+        data = []
+        for s in self.driver.get_pin_status():
+            data.append(s.to_dict())
+        return json.dumps(data)
     
     def list_events(self):
         """lists all events in the system

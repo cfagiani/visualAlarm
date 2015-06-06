@@ -27,6 +27,10 @@
 				<h2>Visual Alarm Control Panel</h2>
 			</div>
 			<div id="timeDiv"></div>
+			<div class='panel panel-default'>
+				<div class='panel-heading'>Light Status</div>
+				<div id="statusDiv" class="panel-body"></div>
+			</div>
 			<div id="eventsDiv"></div>
 		</div>
 	</div>
@@ -55,11 +59,26 @@
 										"Current time on device: "
 												+ dataObj.curtime);
 							});
+							
+												
+					$.ajax({
+						url : "/status"
+					}).then(function(data) {
+						arr = $.parseJSON(data);
+						$.each(arr, function(i, item) {
+							$('#statusDiv').append(buildPinStatusDiv(item));
+						});
+					});
 
 				});
+		function buildPinStatusDiv(item){
+			var pinDiv = $("<div>");
+			var text = item.color+" light is "+ (item.status?"on":"off");
+			pinDiv.html(text);
+			return pinDiv;
+		}
 
-		function buildEventDiv(evt) {
-			var rowDiv = $("<div class='row'>");
+		function buildEventDiv(evt) {			
 			var eventDiv = $("<div class='panel panel-default'>");
                         var lastRunString = "";
                         if( evt.last != "None"){
@@ -67,8 +86,10 @@
                         }
 			eventDiv.append($("<div class='panel-heading'>").html(
 					evt.name.toUpperCase() + " Event"+lastRunString));
+			var bodyDiv = $("<div class='panel-body'>");
+			eventDiv.append(bodyDiv);
 			var formObj = $("<form role='form'>");
-			eventDiv.append(formObj);
+			bodyDiv.append(formObj);
 			var formGroupDiv = $("<div class='form-group'>");
 
 			var label = $("<label class='form-label' for='time' >");
@@ -80,7 +101,6 @@
 			var btn = $('<button type="submit" class="btn btn-default">');
 			btn.html("Update");
 			formObj.append(btn);
-			rowDiv.append(eventDiv);
 
 			formObj.submit(function(event) {
 				event.preventDefault();
@@ -100,7 +120,8 @@
 				}
 
 			});
-			return rowDiv;
+//			return rowDiv;
+return eventDiv;
 		}
 
 		function setSuccess(element, isSuccess) {
