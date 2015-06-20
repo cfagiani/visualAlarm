@@ -33,5 +33,4 @@ The time values are all assumed to be the default timezone as configured on the 
 * better control interface
 * API to add additional events
 * Return timezone in Rest API so UI can render times in local timezone
-* Pin Status API 
 
