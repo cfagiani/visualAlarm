@@ -67,15 +67,40 @@
 						arr = $.parseJSON(data);
 						$.each(arr, function(i, item) {
 							$('#statusDiv').append(buildPinStatusDiv(item));
+							attachPinEvent(item);
 						});
 					});
 
 				});
+
+		function attachPinEvent(item){
+			$("input[name='"+item.color+"options']").on('change', function (evt) {
+
+				$.ajax({
+					type : "PUT",
+					dataType : "json",
+					url : "/lights/" + item.color + "?value=" + (this.id.endsWith("off")?"False":"True"),
+					success : function(data) {
+
+					}
+				});
+
+
+			});
+		}
 		function buildPinStatusDiv(item){
+		var outterDiv = $("<div>");
 			var pinDiv = $("<div>");
-			var text = item.color+" light is "+ (item.status?"on":"off");
+			var text = item.color+" light is: ";
 			pinDiv.html(text);
-			return pinDiv;
+			outterDiv.append(pinDiv);
+			var toggleHtml = '<div class="btn-group" data-toggle="buttons"><label class="btn btn-primary '+(item.status?'active':'')+'"><input type="radio" name="'+item.color+'options" id="'+item.color+'on" autocomplete="off" '+(item.status?'checked':'')+'>On</label>';
+			toggleHtml += '<label class="btn btn-primary '+(item.status?'':'active')+'"><input type="radio" name="'+item.color+'options" id="'+item.color+'off" autocomplete="off" '+(item.status?'':'checked')+'>Off</label>';
+			var buttonDiv = $(toggleHtml);
+			outterDiv.append(buttonDiv);
+
+
+			return outterDiv;
 		}
 
 		function buildEventDiv(evt) {			

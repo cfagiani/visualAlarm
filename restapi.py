@@ -2,8 +2,12 @@
 __author__ = 'Christopher Fagiani'
 """
 from flask import Flask, request
-import json,sys, datetime, threading
+import json
+import datetime
+import threading
+import logging
 
+logger = logging.getLogger(__name__)
 app = Flask(__name__)
 apiInstance = None
 
@@ -16,7 +20,7 @@ def list_events():
     global apiInstance
     return apiInstance.list_events()
 
-@app.route("/status",methods=["GET"])
+@app.route("/status", methods=["GET"])
 def get_status():
     """returns on/of status of all pins
     """
@@ -36,6 +40,15 @@ def update_event(name):
     global apiInstance
     return apiInstance.update_event(name,request.args.get('time'))
 
+@app.route("/lights/<name>", methods=["PUT"])
+def update_pin(name):
+    """
+    updates the value of a pin
+    :param name: name of pin to update
+    """
+    global apiInstance
+    return '{"status":"'+str(apiInstance.update_light(name, request.args.get('value')))+'"}';
+
 class RestApi:
     def __init__(self,port, alarmDriver):
         """Sets up the Flask webserver to run on the port passed in
@@ -48,7 +61,7 @@ class RestApi:
 
     def start(self):
         thread  = threading.Thread(target=self.run_app)
-        thread.daemon = True
+        thread.daemon = False
         thread.start()
 
     def run_app(self):
@@ -59,7 +72,10 @@ class RestApi:
         for s in self.driver.get_pin_status():
             data.append(s.to_dict())
         return json.dumps(data)
-    
+
+    def update_light(self,color,value):
+        return self.driver.set_light(color, value == 'True')
+
     def list_events(self):
         """lists all events in the system
         """
@@ -68,18 +84,14 @@ class RestApi:
             data.append(e.to_dict())
         return json.dumps(data)
 
- 
-    def update_event(self,name,time):
+    def update_event(self, name, time):
         """updates the time for a single event identified by the name passed in via the URL path
         """
         try:
             evt = self.driver.update_event(name,time)
-            if (evt !=None):
+            if evt is not None:
                 return json.dumps(evt.to_dict())
             else:
-                return '{"error":"unkown event"}'  
+                return '{"error":"unknown event"}'
         except:
             return '{"error":"invalid time '+time+'"}'
-
-
-       
