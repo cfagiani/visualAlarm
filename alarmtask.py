@@ -6,11 +6,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class AlarmTask:
     """Encapsulates a task that will be executed by the alarm engine
     """
 
-    def __init__(self, name, time_string, action, one_time=False):
+    def __init__(self, name, weekday_time_string, weekend_time_string, action, one_time=False):
         """
         Constructor. Sets the target even time to the value represented by time_string (format should be HH:MM).
         :param name: name of the event
@@ -21,9 +22,14 @@ class AlarmTask:
         """
         self.name = name
         self.action = action
-        h, m = time_string.split(":")
         self.one_time = one_time
-        self.time = datetime.time(int(h), int(m))
+
+        h, m = weekday_time_string.split(":")
+        self.weekday_time = datetime.time(int(h), int(m))
+
+        h, m = weekend_time_string.split(":")
+        self.weekend_time = datetime.time(int(h), int(m))
+
         self.last_run = None
 
     def execute_if_elapsed(self, now):
@@ -31,13 +37,16 @@ class AlarmTask:
         If the time on this task is at or after the current time AND it's been more than 24 hours since last run
         :param now: current time
         """
-        if self.time <= datetime.time(now.hour, now.minute) and self.__shouldExecute(now):
+        target_time = self.weekday_time
+        if (now.weekday() >= 5):
+            target_time = self.weekend_time
+        if target_time <= datetime.time(now.hour, now.minute) and self.__shouldExecute(now, target_time):
             logger.info("Action %s triggered at %02d:%02d. Scheduled for %02d:%02d" % (
-                self.name, now.hour, now.minute, self.time.hour, self.time.minute))
+                self.name, now.hour, now.minute, target_time.hour, target_time.minute))
             self.last_run = now
             self.action()
 
-    def __shouldExecute(self, now):
+    def __shouldExecute(self, now, event_time):
         """
         Checks now against the last_run for this event and returns a flag indicating if the event should fire.
          Events should fire iff it's
@@ -46,7 +55,7 @@ class AlarmTask:
         """
         if self.last_run is None:
             window = now - datetime.timedelta(minutes=30)
-            if self.time >= datetime.time(window.hour,window.minute):
+            if event_time >= datetime.time(window.hour, window.minute):
                 return True
             else:
                 logger.debug("Not firing %s since we're out of the execution window" % self.name)
@@ -61,7 +70,8 @@ class AlarmTask:
         """
         d = {}
         d['name'] = self.name
-        d['time'] = self.time.strftime('%H:%M')
+        d['weekday-time'] = self.weekday_time.strftime('%H:%M')
+        d['weekend-time'] = self.weekend_time.strftime('%H:%M')
         d['last'] = str(self.last_run)
         d['onetime'] = self.one_time
         return d
@@ -72,11 +82,13 @@ class AlarmTask:
         """
         return self.name
 
-    def update_time(self, time_string):
+    def update_time(self, weekday_time_string, weekend_time_string):
         """
         updates the time property to the value passed in AND resets the last_run property to None
         :param time_string: string to which the time will be set
         """
-        h, m = time_string.split(":")
-        self.time = datetime.time(int(h), int(m))
+        h, m = weekday_time_string.split(":")
+        self.weekday_time = datetime.time(int(h), int(m))
+        h, m = weekend_time_string.split(":")
+        self.weekend_time = datetime.time(int(h), int(m))
         self.last_run = None

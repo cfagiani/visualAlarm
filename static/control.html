@@ -117,11 +117,18 @@
 			bodyDiv.append(formObj);
 			var formGroupDiv = $("<div class='form-group'>");
 
-			var label = $("<label class='form-label' for='time' >");
-			label.html("Time");
+			var label = $("<label class='form-label' for='weekday-time' >");
+			label.html("Weekday Time");
 			formGroupDiv.append(label);
-			var timebox = $('<input type="text" class="form-control" name="time" placeholder="hh24:mm" value="'+evt.time+'"">');
+			var timebox = $('<input type="text" class="form-control" name="weekday-time" placeholder="hh24:mm" value="'+evt["weekday-time"]+'"">');
 			formGroupDiv.append(timebox);
+
+			var label2 = $("<label class='form-label' for='weekend-time' >");
+			label2.html("Weekend Time");
+			formGroupDiv.append(label2);
+			var timebox2 = $('<input type="text" class="form-control" name="weekend-time" placeholder="hh24:mm" value="'+evt["weekend-time"]+'"">');
+			formGroupDiv.append(timebox2);
+
 			formObj.append(formGroupDiv);
 			var btn = $('<button type="submit" class="btn btn-default">');
 			btn.html("Update");
@@ -129,15 +136,16 @@
 
 			formObj.submit(function(event) {
 				event.preventDefault();
-				var time = timebox.val();
-				if (time.match(/^([01]\d|2[0-3]):([0-5]\d)$/) == null) {
+				var weekday_time = timebox.val();
+                var weekend_time = timebox2.val();
+				if ((weekday_time.match(/^([01]\d|2[0-3]):([0-5]\d)$/) == null) && (weekend_time.match(/^([01]\d|2[0-3]):([0-5]\d)$/) == null)) {
 					setSuccess(formGroupDiv, false);
 				} else {
 					//update and set to green
 					$.ajax({
 						type : "PUT",
 						dataType : "json",
-						url : "/events/" + evt.name + "?time=" + time,
+						url : "/events/" + evt.name + "?weekdayTime=" + weekday_time+"&weekendTime="+weekend_time,
 						success : function(data) {
 							setSuccess(formGroupDiv, true);
 						}

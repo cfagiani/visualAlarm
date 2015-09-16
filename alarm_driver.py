@@ -39,16 +39,17 @@ class AlarmDriver:
                 return e
         return None
 
-    def update_event(self, name, time):
+    def update_event(self, name, weekday_time,weekend_time):
         """
         updates an event with the time passed in
         :param name: name of event to update
-        :param time: string representation of the time (HH:MM format)
+        :param weekday_time: string representation of the time (HH:MM format)
+        :param weekend_time: string representation of the time (HH:MM format)
         :return:
         """
         evt = self.get_event(name)
         if (evt != None):
-            evt.update_time(time)
+            evt.update_time(weekday_time,weekend_time)
             return evt
         return None
 
@@ -72,9 +73,9 @@ class AlarmDriver:
         :param offTime:  time for the off event
         """
         events = []
-        events.append(AlarmTask("on", onTime, lambda: self.toggle_pins(self.pins[1], self.pins[0])))
-        events.append(AlarmTask("toggle", toggleTime, lambda: self.toggle_pins(self.pins[0], self.pins[1])))
-        events.append(AlarmTask("off", offTime, lambda: self.deactivate_pins()))
+        events.append(AlarmTask("on", onTime, onTime, lambda: self.toggle_pins(self.pins[1], self.pins[0])))
+        events.append(AlarmTask("toggle", toggleTime, toggleTime, lambda: self.toggle_pins(self.pins[0], self.pins[1])))
+        events.append(AlarmTask("off", offTime, offTime, lambda: self.deactivate_pins()))
         self.events = events
 
     def get_pin_status(self):

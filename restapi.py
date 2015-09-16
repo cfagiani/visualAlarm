@@ -38,7 +38,7 @@ def update_event(name):
     """updates the time for a single event identified by the name passed in via the URL path
     """
     global apiInstance
-    return apiInstance.update_event(name,request.args.get('time'))
+    return apiInstance.update_event(name,request.args.get('weekdayTime'),request.args.get('weekendTime'))
 
 @app.route("/lights/<name>", methods=["PUT"])
 def update_pin(name):
@@ -84,11 +84,11 @@ class RestApi:
             data.append(e.to_dict())
         return json.dumps(data)
 
-    def update_event(self, name, time):
+    def update_event(self, name, weekday_time, weekend_time):
         """updates the time for a single event identified by the name passed in via the URL path
         """
         try:
-            evt = self.driver.update_event(name,time)
+            evt = self.driver.update_event(name,weekday_time,weekend_time)
             if evt is not None:
                 return json.dumps(evt.to_dict())
             else:
